@@ -7,13 +7,33 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": "node --experimental-modules server",
-    "start:dev": "nodemon -w game -w server --exec yarn start "
+    "start:dev": "nodemon -w game -w server --exec yarn start ",
+    "pretty": "prettier --write **/*.{js,json,scss,vue,yml}"
+  },
+  "lint-staged": {
+    "*.{vue,js}": [
+      "prettier --write",
+      "eslint --fix --max-warnings 0 --ignore-pattern '!.eslintrc.js'",
+      "git add"
+    ],
+    "*.{scss,json,yml}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "dependencies": {
     "boardgame.io": "^0.26.3",
     "debug": "^4.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^22.0.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
     "immer": "^1.7.4",
     "koa-static": "^5.0.0",
+    "prettier": "^1.15.2",
     "vue": "^2.5.17",
     "vuex": "^3.0.1"
   },

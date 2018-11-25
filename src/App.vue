@@ -35,7 +35,6 @@ export default {
   methods: {
     ...mapActions('game',['init', 'move']),
     pushCard(card) {
-      // console.log('push card', card)
       this.move({ name: 'play', arg: card })
     }
   },
