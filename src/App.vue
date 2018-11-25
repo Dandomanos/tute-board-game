@@ -2,38 +2,29 @@
   <div id="app">
     <div v-for="(player, index) in G.players" :key="index" style="text-align:left;">
       <h3 :class="{'is-active':ctx.currentPlayer == index}">Player {{index +1}}</h3>
-      <button
-        v-for="card in player.cards"
-        :key="`${card.rank}-${card.suit}`"
-        :style="{backgroundColor: bg[card.suit]}
-      ">
-      <span class="card-rank">
-        <b>{{card.rank}} </b>
-      </span>
-      <span class="card-suit">
-        {{card.suit}}
-      </span>
-      </button>
+      <card v-for="card in player.cards" :card="card" :key="`${card.rank}-${card.suit}`" @push="pushCard"/>
     </div>
-    Fase: {{ ctx.phase }}
-    Current player:  {{ctx.currentPlayer}}
+    <div class="legend">
+      Fase: {{ ctx.phase }}
+      Current player:  {{ctx.currentPlayer}}
+      Triumph : {{G.triumph}}
+    </div>
   </div>
 </template>
 
 <script>
 import {mapActions, mapState} from 'vuex'
+import Card from './components/Card'
 export default {
   name: 'app',
-  data: ()=> ({
-    bg: {
-      Oros: 'gold',
-      Copas: 'coral',
-      Espadas: 'darkturquoise',
-      Bastos: 'darkseagreen'
-    }
-  }),
+  components: {
+    Card
+  },
   methods: {
-    ...mapActions('game',['init'])
+    ...mapActions('game',['init']),
+    pushCard(card) {
+      console.log('push card', card)
+    }
   },
   computed: {
     ...mapState('game', ['G','ctx'])

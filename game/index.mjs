@@ -5,11 +5,12 @@ const { produce } = immer
 const game = boardgame.Game({
   setup: ctx => {
     const players = []
+    const triumph = {}
     const ids = Array.apply(null, { length: ctx.numPlayers }).map(Number.call, Number)
     ids.forEach((player, index) => {
-      players[index] = { cards: [] };
-    });
-    return { players, deck: generate() };
+      players[index] = { cards: [] }
+    })
+    return { players, deck: generate(), triumph }
   },
   moves: {
     play: produce((G, ctx, ...cards) => {
@@ -45,6 +46,7 @@ const game = boardgame.Game({
           G.deck.forEach((card, index) => {
             const playerId = index % ctx.numPlayers
             G.players[playerId].cards.push(card)
+            if(index === G.deck.length - 1) G.triumph = card
           })
           G.players.map(player => ({ ...player, cards: sortCards(player.cards)}))
           G.deck = []
