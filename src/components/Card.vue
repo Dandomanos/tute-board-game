@@ -36,4 +36,25 @@ export default {
   }
 }
 </script>
+<style>
+button {
+  width:70px;
+  font-size:10px;
+  height:120px;
+  position:relative;
+}
+.card-rank {
+  position:absolute;
+  left: 5px;
+  top: 3px;
+  font-size:20px;
+}
+.card-suit {
+  position:absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size:12px;
+}
+</style>
+
 

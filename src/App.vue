@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <div class="triumph">
+       <card :card="G.triumph"/>
+    </div> 
     <div v-for="(player, index) in G.players" :key="index" style="text-align:left;">
       <h3 :class="{'is-active':ctx.currentPlayer == index}">Player {{index +1}}</h3>
       <card v-for="card in player.cards" :card="card" :key="`${card.rank}-${card.suit}`" @push="pushCard"/>
@@ -51,22 +54,5 @@ h3 {
 h3.is-active {
     border:1px solid #999;
   }
-button {
-  width:70px;
-  font-size:10px;
-  height:120px;
-  position:relative;
-}
-.card-rank {
-  position:absolute;
-  left: 5px;
-  top: 3px;
-  font-size:20px;
-}
-.card-suit {
-  position:absolute;
-  right: 5px;
-  bottom: 3px;
-  font-size:12px;
-}
+
 </style>
