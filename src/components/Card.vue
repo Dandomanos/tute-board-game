@@ -14,12 +14,18 @@
   </button>
 </template>
 <script>
+import Debug from 'debug'
+const debug = Debug("app:game")
 export default {
   props:{
-      card: {
-          type: Object,
-          default:null,
-      }
+    card: {
+        type: Object,
+        default:null,
+    },
+    isActive: {
+      type: Boolean,
+      default:false,
+    }
   },
   data: ()=> ({
     bg: {
@@ -31,7 +37,8 @@ export default {
   }),
   methods: {
     push() {
-      this.$emit('push', this.card)
+      if(this.isActive) this.$emit('push', this.card)
+      else debug('not your turn')
     }
   }
 }

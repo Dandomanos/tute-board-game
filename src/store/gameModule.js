@@ -36,8 +36,8 @@ const actions = {
     client.subscribe(sync)
     sync()
   },
-  move(state, { name, args = [] }) {
-    return client.moves[name](...args)
+  move(state, { name, arg = {} }) {
+    return client.moves[name](arg)
   },
 }
 

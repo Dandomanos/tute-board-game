@@ -2,10 +2,19 @@
   <div id="app">
     <div class="triumph">
        <card :card="G.triumph"/>
-    </div> 
+    </div>
+    <div class="round">
+      <card  v-for="card in G.round" :card="card" :key="`${card.rank}-${card.suit}`"/>
+    </div>
     <div v-for="(player, index) in G.players" :key="index" style="text-align:left;">
       <h3 :class="{'is-active':ctx.currentPlayer == index}">Player {{index +1}}</h3>
-      <card v-for="card in player.cards" :card="card" :key="`${card.rank}-${card.suit}`" @push="pushCard"/>
+      <card
+        v-for="card in player.cards"
+        :card="card"
+        :key="`${card.rank}-${card.suit}`"
+        :is-active="ctx.currentPlayer == index"
+        @push="pushCard"
+      />
     </div>
     <div class="legend">
       Fase: {{ ctx.phase }}
@@ -24,9 +33,10 @@ export default {
     Card
   },
   methods: {
-    ...mapActions('game',['init']),
+    ...mapActions('game',['init', 'move']),
     pushCard(card) {
-      console.log('push card', card)
+      // console.log('push card', card)
+      this.move({ name: 'play', arg: card })
     }
   },
   computed: {
