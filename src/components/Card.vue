@@ -3,6 +3,7 @@
       v-if="card"
       :key="`${card.rank}-${card.suit}`"
       :style="{backgroundColor: bg[card.suit]}"
+      :disabled="disabled"
       @click="push"
     >
     <span class="card-rank">
@@ -25,6 +26,10 @@ export default {
     isActive: {
       type: Boolean,
       default:false,
+    },
+    allowedCards: {
+      type: Array,
+      default: ()=>[]
     }
   },
   data: ()=> ({
@@ -37,8 +42,19 @@ export default {
   }),
   methods: {
     push() {
+      debug('push card', this.card)
       if(this.isActive) this.$emit('push', this.card)
       else debug('not your turn')
+    }
+  },
+  computed: {
+    disabled() {
+      return !this.isActive || !this.isAllowed
+    },
+    isAllowed() {
+      if(!this.allowedCards || this.allowedCards.length === 0) return true
+      // return this.allowedCards.inludes(this.card)
+      return this.allowedCards.find(card => card.suit === this.card.suit && card.rank === this.card.rank )
     }
   }
 }

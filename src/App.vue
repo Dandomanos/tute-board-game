@@ -9,10 +9,11 @@
     <div v-for="(player, index) in G.players" :key="index" style="text-align:left;">
       <h3 :class="{'is-active':ctx.currentPlayer == index}">Player {{index +1}}</h3>
       <card
-        v-for="card in player.cards"
+        v-for="card in player.hand"
         :card="card"
         :key="`${card.rank}-${card.suit}`"
         :is-active="ctx.currentPlayer == index"
+        :allowed-cards="player.allowedCards"
         @push="pushCard"
       />
     </div>
