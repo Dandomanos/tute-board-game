@@ -1,0 +1,11 @@
+{
+  "presets": [["poi", { "jsx": "vue" }]],
+    "env": {
+    "coverage": {
+      "plugins": ["istanbul"]
+    },
+    "test": {
+      "presets": [["env", { "targets": { "node": 8 } }]]
+    }
+  }
+}

@@ -1,10 +1,9 @@
 import boardgame from 'boardgame.io/core'
 import { generate, sortCards } from './deck'
 import immer from 'immer'
-import { getSuitCards, getHigherCards, getWinnerCard} from './utils.js'
+import { getAllowedCards, getWinnerCardOnRound, checkSongs } from './utils.js'
 import Debug from 'debug'
 const debug = Debug('app:game')
-
 
 const { produce } = immer
 const game = boardgame.Game({
@@ -12,14 +11,16 @@ const game = boardgame.Game({
     const players = []
     const triumph = {}
     const round = []
+    const team = () => ({ collectedCards: [], songs: {} })
+    const teams = [team(), team()]
     const ids = Array.apply(null, { length: ctx.numPlayers }).map(
       Number.call,
       Number
     )
     ids.forEach((player, index) => {
-      players[index] = { hand: [], allowedCards:[] }
+      players[index] = { hand: [], allowedCards: [], pushedCard: null }
     })
-    return { players, deck: generate(), triumph, round }
+    return { players, deck: generate(), triumph, round, teams }
   },
   moves: {
     play: produce((G, ctx, card) => {
@@ -27,6 +28,7 @@ const game = boardgame.Game({
       const player = G.players[ctx.currentPlayer]
       debug('player', player)
       G.round.push(card)
+      player.pushedCard = card
 
       // Remove cards from player hand
       player.hand = player.hand.filter(
@@ -37,25 +39,7 @@ const game = boardgame.Game({
       // Ends player turn
       ctx.events.endTurn()
       debug('end turn')
-
-      // Si hay cartas en la mesa y la ronda está activa
-      // Que sea del mismo palo si tienes cartas de ese palo
-      // Que sea superior si puede superarla
-
-      // Que sean entre 1 y 4
-      // if (cards.length < 1 || cards.length > 4) {
-      //   return debug('Numero de cartas entre 1 y 4')
-      // }
-      // // Que el user tenga esas cartas
-      // if (_.intersection(player.hand, cards).length != cards.length) {
-      //   return debug('El usuario no tiene esas cartas')
-      // }
-      // // Que tengan el mismo rango
-      // debug(_.intersection(player.hand, cards))
-      // Rango superior a la anterior jugada
-      // Quitar cartas de la mano
-      // Guardar cartas en la mesa
-    })
+    }),
   },
   flow: {
     phases: [
@@ -70,23 +54,22 @@ const game = boardgame.Game({
           })
           G.players.map(player => ({
             ...player,
-            hand: sortCards(player.hand)
+            hand: sortCards(player.hand),
           }))
           G.deck = []
 
           // Sort by rank and suit
           ctx.events.endPhase()
-        })
+        }),
       },
       {
         name: 'round',
         allowedMoves: ['play'],
         onPhaseBegin: produce((G, ctx) => {
-          debug("phase begin current player", ctx.currentPlayer)
-          G.round = []
-          
+          debug('phase begin current player', ctx.currentPlayer)
+
           const player = G.players[ctx.currentPlayer]
-          player.allowedCards = player.hand.map(card=>card)
+          player.allowedCards = player.hand
           debug('hand', player.hand)
           debug('allowed', player.allowedCards)
         }),
@@ -97,54 +80,48 @@ const game = boardgame.Game({
 
           // set allowedCards cards
           const actualHand = G.players[ctx.currentPlayer].hand
-          let allowedCards = []
-          // if first card of round
-          if(G.round.length==0) 
-            allowedCards = actualHand.map(card => card)
-          else {
-            debug("round is started with suit", G.round[0].suit)
-            // if round is started, get suit of first card on round 
-            allowedCards = getSuitCards(G.round[0].suit, actualHand)
-            debug('same suit', allowedCards)
-            // if player can win the rank
-            if (allowedCards.length>0) {
-              // it triumph is not pushed card should be higher than winner card
-              const triumphsPushed = getSuitCards(G.triumph.suit, G.round)
-              const suitPushed = getSuitCards(G.round[0].suit, G.round)
-              // if first card is triump => TO DO
 
-              // else
-              if (triumphsPushed.length === 0) {
-                const winnerRankIndex = getWinnerCard(suitPushed)
-                debug("winner card", winnerRankIndex)
-                const higherCards = getHigherCards(winnerRankIndex, allowedCards)
-                debug('higherCards', higherCards)
-                // if user can win return winner cards
-                if(higherCards.length>0)
-                  allowedCards = higherCards
-              }
-              // if user cant win return the same
-
-            }
-            // if player havent same suit, get triumphs
-            if (allowedCards.length===0)
-              allowedCards = getSuitCards(G.triumph.suit, actualHand)
-            // if no triumphs allow all
-            if (allowedCards.length === 0)
-              allowedCards = actualHand.map(card => card)
-          }
-
-          G.players[ctx.currentPlayer].allowedCards = allowedCards
+          G.players[ctx.currentPlayer].allowedCards = getAllowedCards(
+            actualHand,
+            G.round,
+            G.triumph
+          )
 
           if (G.round.length === 4) {
             debug('end Phase')
+            // Check winner to start next round
+            const winnerCard = getWinnerCardOnRound(G.round, G.triumph)
+            const winnerPlayer = G.players.findIndex(
+              player =>
+                player.pushedCard.rank === winnerCard.rank &&
+                player.pushedCard.suit === winnerCard.suit
+            )
+            ctx.playOrderPos = winnerPlayer
+            debug('winnerCard', winnerCard.suit, winnerCard.rank)
+            debug('winnerPlayer', winnerPlayer)
 
+            // Add cards to team
+            const winnerTeam = winnerPlayer % 2
+            G.teams[winnerTeam].collectedCards = G.teams[
+              winnerTeam
+            ].collectedCards.concat(G.round)
+
+            // Check for songs
+            let songs = []
+            G.players.forEach((player, index) => {
+              if (index % 2 === winnerTeam) {
+                songs = songs.concat(checkSongs(player.hand, G.triumph.suit))
+              }
+            })
+            debug('songs', songs)
+            // Clear round
+            G.round = []
             ctx.events.endPhase()
           }
-        })
-      }
-    ]
-  }
+        }),
+      },
+    ],
+  },
 })
 
 export default game
