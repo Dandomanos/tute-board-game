@@ -14,7 +14,7 @@
 </template>
 <script>
 import Debug from 'debug'
-const debug = Debug('app:game')
+const debug = Debug('app:card')
 export default {
   props: {
     card: {
@@ -43,7 +43,8 @@ export default {
       return !this.isActive || !this.isAllowed
     },
     isAllowed() {
-      if (!this.allowedCards || this.allowedCards.length === 0) return true
+      if (!this.allowedCards || this.allowedCards.length === 0 || !this.card)
+        return true
       // return this.allowedCards.inludes(this.card)
       return this.allowedCards.find(
         card => card.suit === this.card.suit && card.rank === this.card.rank
@@ -52,7 +53,7 @@ export default {
   },
   methods: {
     push() {
-      debug('push card', this.card)
+      // debug('push card', this.card)
       if (this.isActive) this.$emit('push', this.card)
       else debug('not your turn')
     },

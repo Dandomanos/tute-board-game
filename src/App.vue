@@ -32,6 +32,12 @@
           :card="card"
           :is-active="false"
         />
+        <div class="songs">
+          <div
+            v-for="song in team.songs"
+            :key="`${song.value}-${song.suit}`"
+          >{{ `${song.value}-${song.suit}` }}</div>
+        </div>
         <!-- <card v-for="card in G.teams.team1.collectedCards" :card="card" :key="`${card.rank}-${card.suit}`" :is-active="false"> -->
       </div>
     </div>
