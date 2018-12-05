@@ -4,7 +4,15 @@
       <!-- navigation -->
     </div>
     <div class="hero-body">
-      <div class="match">
+      <div v-if="ctx.phase==='score'" class="match match-score">
+        <final-score :score="teamScore">
+          <slot>Your Team</slot>
+        </final-score>
+        <final-score :score="enemyScore">
+          <slot>Vs Team</slot>
+        </final-score>
+      </div>
+      <div v-else class="match">
         <!-- PLAYER UNO -->
         <div class="player player-1" :class="{'is-active':itsTurnOf[1]}">
           <!-- <h3 :class="{'is-active':ctx.currentPlayer == 1}">Player 1</h3> -->
@@ -29,26 +37,29 @@
               />
             </div>
           </div>
-          <div class="board-game columns is-multiline is-mobile">
-            <div class="card-1 column is-12">
-              <card :card="G.players[displayOrder[1]].pushedCard" />
+          <div class="board-game">
+            <div class="columns is-multiline is-mobile">
+              <div class="card-1 column is-12">
+                <card :card="G.players[displayOrder[1]].pushedCard" />
+              </div>
+              <div class="card-0 column is-4">
+                <card :card="G.players[displayOrder[0]].pushedCard" />
+              </div>
+              <div class="card-0 column is-4">
+                <card :card="G.triumph" />
+              </div>
+              <div class="card-2 column is-4">
+                <card :card="G.players[displayOrder[2]].pushedCard" />
+              </div>
+              <div class="card-3 column is-12">
+                <card :card="G.players[displayOrder[3]].pushedCard" />
+              </div>
             </div>
-            <div class="card-0 column is-4">
-              <card :card="G.players[displayOrder[0]].pushedCard" />
-            </div>
-            <div class="card-0 column is-4">
-              <card :card="G.triumph" />
-            </div>
-            <div class="card-2 column is-4">
-              <card :card="G.players[displayOrder[2]].pushedCard" />
-            </div>
-            <div class="card-3 column is-12">
-              <card :card="G.players[displayOrder[3]].pushedCard" />
-            </div>
+            <pile-score class="team-score" :score="teamScore" />
+            <pile-score class="enemy-score" :score="enemyScore" />
           </div>
           <!-- PLAYER 2 -->
           <div class="player player-2" :class="{'is-active':itsTurnOf[2]}">
-            <!-- <h3 :class="{'is-active':ctx.currentPlayer == 1}">Player 1</h3> -->
             <div class="hand">
               <card
                 v-for="(card,index) in G.players[displayOrder[2]].hand"
@@ -71,61 +82,27 @@
             />
           </div>
         </div>
-        <!-- <div class="triumph">
-          <p>Triumph</p>
-          <card :card="G.triumph" />
-        </div>
-        <div class="round">
-          <p>Round</p>
-          <card v-for="card in G.round" :key="`${card.rank}-${card.suit}`" :card="card" />
-        </div>-->
       </div>
     </div>
     <div class="hero-foot">
       <!-- footer -->
     </div>
-    <!-- <div v-for="(player, index) in G.players" :key="index" style="text-align:left;">
-      <h3 :class="{'is-active':ctx.currentPlayer == index}">Player {{ index +1 }}</h3>
-      <card
-        v-for="card in player.hand"
-        :key="`${card.rank}-${card.suit}`"
-        :card="card"
-        :is-active="ctx.currentPlayer == index"
-        :allowed-cards="player.allowedCards"
-        @push="pushCard"
-      />
-      <card :card="player.pushedCard" :is-active="false" style="float:right;" />
-    </div>-->
-    <!-- 
-    <div class="legend">Fase: {{ ctx.phase }}</div>
-    <div class="score">
-      <div v-for="(team, index) in G.teams" :key="index" class="team">
-        <div>Team {{ index+1 }}</div>
-        <card
-          v-for="card in team.collectedCards"
-          :key="`${card.rank}-${card.suit}`"
-          :card="card"
-          :is-active="false"
-        />
-        <div class="songs">
-          <div
-            v-for="song in team.songs"
-            :key="`${song.value}-${song.suit}`"
-          >{{ `${song.value}-${song.suit}` }}</div>
-        </div>
-      </div>
-    </div>-->
   </div>
 </template>
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import Card from './components/Card'
+import Card from '@/components/Card'
+import PileScore from '@/components/PileScore'
+import FinalScore from '@/components/FinalScore'
+
 import screen from '@/mixins/screen'
 export default {
   name: 'App',
   components: {
     Card,
+    PileScore,
+    FinalScore,
   },
   mixins: [screen],
   data: () => ({
@@ -135,12 +112,10 @@ export default {
       2: [1, 0, 3, 2],
       3: [2, 1, 0, 3],
     },
+    teams: [0, 1, 0, 1],
   }),
   computed: {
     ...mapState('game', ['G', 'ctx', 'config']),
-    myTeam() {
-      return this.G.teams[1]
-    },
     playerID() {
       return this.config.playerID
     },
@@ -161,6 +136,15 @@ export default {
       return this.displayOrder.map(
         item => item === (this.ctx.currentPlayer | 0)
       )
+    },
+    teamIndex() {
+      return this.teams[this.playerID]
+    },
+    teamScore() {
+      return this.G.teams[this.teamIndex]
+    },
+    enemyScore() {
+      return this.G.teams[this.teamIndex === 0 ? 1 : 0]
     },
   },
   created() {
@@ -200,6 +184,13 @@ export default {
 .is-landScape {
   .match {
     width: $board-height;
+    height: $board-height;
+    .player-1 {
+      height: getHor(14.2);
+    }
+    .player-3 {
+      height: getHor(17.8);
+    }
     .player-1,
     .player-3 {
       padding: getHor(1) getHor(15);
@@ -226,20 +217,45 @@ export default {
         }
       }
     }
+    .player-0 {
+      .hand {
+        .card-container {
+          transform: rotate(90deg) translateY(getHor(-0.8));
+        }
+      }
+    }
+    .player-2 {
+      .hand {
+        .card-container {
+          transform: rotate(270deg) translateY(getHor(-0.2));
+        }
+      }
+    }
   }
 }
 .match {
   width: $board-width;
-  // height: 100vw;
+  height: $board-width;
   margin: 0 auto;
   padding: 0;
   background-color: darkgreen;
+  &.match-score {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: getVer(10);
+  }
   .is-active {
-    border: 1px white solid;
+    background-color: green;
+  }
+  .player-1 {
+    height: getVer(14.2);
+  }
+  .player-3 {
+    height: getVer(17.8);
   }
   .player-1,
   .player-3 {
-    // height: 20%;
     padding: getVer(1) getVer(15);
     h3 {
       padding: 0;
@@ -269,6 +285,11 @@ export default {
     .board-game {
       margin: 0;
       width: getVer(68);
+      position: relative;
+      > .columns {
+        height: 100%;
+        margin: 0;
+      }
       .column {
         align-self: center;
       }
@@ -295,34 +316,20 @@ export default {
     }
     .player-0 {
       .hand {
-        align-items: flex-end;
+        align-items: center;
         .card-container {
-          transform: rotate(90deg) translateY(getVer(0.3));
+          transform: rotate(90deg) translateY(getVer(-0.8));
         }
       }
     }
     .player-2 {
       .hand {
-        align-items: flex-start;
+        align-items: center;
         .card-container {
-          transform: rotate(270deg) translateY(getVer(0.4));
+          transform: rotate(270deg) translateY(getVer(-0.2));
         }
       }
     }
-    // .player-0 .hand .card-container {
-    //   transform: rotate(90deg);
-    // }
-    // .player-2 .hand .card-container {
-    //   transform: rotate(270deg);
-    // }
   }
 }
-.match::after {
-  content: '';
-  clear: both;
-  display: block;
-}
-// .player {
-//   border: 1px solid yellow;
-// }
 </style>

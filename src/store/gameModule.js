@@ -21,7 +21,7 @@ const state = {
     playerID: location.search.slice(1),
     /* Multiplayer options */
     // playerID: 'def',
-    gameID: 'def1',
+    gameID: 'test-1',
     multiplayer: {
       server: process.env.NODE_ENV === 'production' ? '' : 'localhost:8000',
     },

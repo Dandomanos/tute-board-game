@@ -75,14 +75,14 @@ const checkSongs = (hand, triumphSuit) => {
 
   const SONGS = []
 
-  if (kings.length === 4) SONGS.push({ value: 'tute', rank: 12 })
-  if (horses.length === 4) SONGS.push({ value: 'tute', rank: 11 })
+  if (kings.length === 4) SONGS.push({ value: 'tute', type: 12 })
+  if (horses.length === 4) SONGS.push({ value: 'tute', type: 11 })
   SUITS.forEach(suit => {
     const suitFigures = getSuitCards(suit, figures)
     if (suitFigures.length == 2)
       SONGS.push({
         value: suit === triumphSuit ? 40 : 20,
-        suit: suit,
+        type: suit,
       })
   })
   return SONGS
@@ -116,10 +116,37 @@ const getNextSong = (songs, singed) => {
   return notSinged[0]
 }
 
+const getCardsBySong = ({ suit, rank }) => {
+  if (suit) return [12, 11].map(rank => ({ rank: rank, suit: suit }))
+  if (rank)
+    return ['Oros', 'Copas', 'Espadas', 'Bastos'].map(suit => ({
+      rank: rank,
+      suit: suit,
+    }))
+  return []
+}
+
+const getSongObject = () => ({
+  Oros: getCardsBySong({ suit: 'Oros' }),
+  Copas: getCardsBySong({ suit: 'Copas' }),
+  Espadas: getCardsBySong({ suit: 'Espadas' }),
+  Bastos: getCardsBySong({ suit: 'Bastos' }),
+  '12': getCardsBySong({ rank: 12 }),
+  '11': getCardsBySong({ rank: 11 }),
+})
+
+const getSongCards = songs => {
+  return songs.reduce(
+    (prev, cur) => prev.concat(getSongObject()[cur.type.toString()]),
+    []
+  )
+}
+
 export {
   getAllowedCards,
   getWinnerCardOnRound,
   checkSongs,
   orderSongs,
   getNextSong,
+  getSongCards,
 }

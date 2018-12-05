@@ -27,7 +27,14 @@ const game = boardgame.Game({
     ids.forEach((player, index) => {
       players[index] = { hand: [], allowedCards: [], pushedCard: {} }
     })
-    return { players, deck: generate(), triumph, round, teams, nextPlayer }
+    return {
+      players,
+      deck: generate(),
+      triumph,
+      round,
+      teams,
+      nextPlayer,
+    }
   },
   playerView: produce((G, ctx, playerID) => {
     G.players.forEach((player, id) => {
@@ -93,14 +100,13 @@ const game = boardgame.Game({
         )
         if (!handCards || !handCards.length) {
           debug('NO MORE CARDS')
+          // TO DO => And last 10 to songs
           ctx.events.endPhase()
+          return
         }
         // Ends player turn
         debug('SET NEXT PLAYER WINNER', winnerPlayer)
         G.nextPlayer = winnerPlayer
-        // ctx.events.endTurn()
-        // ctx.playOrderPos = winnerPlayer
-        // return
       }
       debug('NEXT', G.nextPlayer)
       debug('CURRENT', ctx.currentPlayer)
@@ -120,6 +126,7 @@ const game = boardgame.Game({
             G.players[playerId].hand.push(card)
             if (index === G.deck.length - 1) G.triumph = card
           })
+
           // Sort by rank and suit
           G.players.map(player => ({
             ...player,
@@ -175,6 +182,9 @@ const game = boardgame.Game({
         name: 'score',
         onPhaseBegin: produce((G, ctx) => {
           debug('begin scoring')
+        }),
+        onTurnBegin: produce((G, ctx) => {
+          debug('begin scoring turn')
         }),
       },
     ],
