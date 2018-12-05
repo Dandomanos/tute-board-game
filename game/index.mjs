@@ -7,7 +7,7 @@ import {
   checkSongs,
   orderSongs,
   getNextSong,
-} from './utils.js'
+} from './utils'
 import Debug from 'debug'
 const debug = Debug('app:game')
 
@@ -25,10 +25,16 @@ const game = boardgame.Game({
       Number
     )
     ids.forEach((player, index) => {
-      players[index] = { hand: [], allowedCards: [], pushedCard: null }
+      players[index] = { hand: [], allowedCards: [], pushedCard: {} }
     })
     return { players, deck: generate(), triumph, round, teams, nextPlayer }
   },
+  playerView: produce((G, ctx, playerID) => {
+    G.players.forEach((player, id) => {
+      if (id === (playerID | 0)) return player
+      player.hand = player.hand.map(card => ({}))
+    })
+  }),
   moves: {
     play: produce((G, ctx, card) => {
       debug('play', card)

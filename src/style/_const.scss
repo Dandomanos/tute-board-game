@@ -1,0 +1,10 @@
+$board-width: 90vw;
+$board-height: 90vh;
+$landScape: 'only screen and (orientation: landscape)';
+
+@function getVer($percent) {
+  @return $percent * $board-width / 100;
+}
+@function getHor($percent) {
+  @return $percent * $board-height / 100;
+}
