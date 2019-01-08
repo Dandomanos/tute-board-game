@@ -13,75 +13,34 @@
         </final-score>
       </div>
       <div v-else class="match">
-        <!-- PLAYER UNO -->
-        <div class="player player-1" :class="{'is-active':itsTurnOf[1]}">
-          <!-- <h3 :class="{'is-active':ctx.currentPlayer == 1}">Player 1</h3> -->
-          <div class="hand">
-            <card
-              v-for="(card, index) in G.players[displayOrder[1]].hand"
-              :key="`player-1-${index}`"
-              :card="card"
-              :is-active="false"
-            />
-          </div>
-        </div>
+        <player
+          class="player-1"
+          :display-order="displayOrder"
+          :player-index="1"
+        />
         <div class="board">
-          <!-- PLAYER 0 -->
-          <div class="player player-0" :class="{'is-active':itsTurnOf[0]}">
-            <div class="hand">
-              <card
-                v-for="(card, index) in G.players[displayOrder[0]].hand"
-                :key="`player-0-${index}`"
-                :card="card"
-                :is-active="false"
-              />
-            </div>
-          </div>
-          <div class="board-game">
-            <div class="columns is-multiline is-mobile">
-              <div class="card-1 column is-12">
-                <card :card="G.players[displayOrder[1]].pushedCard" />
-              </div>
-              <div class="card-0 column is-4">
-                <card :card="G.players[displayOrder[0]].pushedCard" />
-              </div>
-              <div class="card-0 column is-4">
-                <card :card="G.triumph" />
-              </div>
-              <div class="card-2 column is-4">
-                <card :card="G.players[displayOrder[2]].pushedCard" />
-              </div>
-              <div class="card-3 column is-12">
-                <card :card="G.players[displayOrder[3]].pushedCard" />
-              </div>
-            </div>
+          <player
+            class="player-0"
+            :display-order="displayOrder"
+            :player-index="0"
+          />
+          <board :display-order="displayOrder">
             <pile-score class="team-score" :score="teamScore" />
             <pile-score class="enemy-score" :score="enemyScore" />
-          </div>
-          <!-- PLAYER 2 -->
-          <div class="player player-2" :class="{'is-active':itsTurnOf[2]}">
-            <div class="hand">
-              <card
-                v-for="(card,index) in G.players[displayOrder[2]].hand"
-                :key="`player-2-${index}`"
-                :card="card"
-                :is-active="false"
-              />
-            </div>
-          </div>
+          </board>
+          <player
+            class="player-2"
+            :display-order="displayOrder"
+            :player-index="2"
+          />
         </div>
-        <div class="player player-3" :class="{'is-active':isYourTurn}">
-          <div class="hand">
-            <card
-              v-for="card in G.players[displayOrder[3]].hand"
-              :key="`${card.rank}-${card.suit}`"
-              :card="card"
-              :is-active="isYourTurn"
-              :allowed-cards="allowedCards"
-              @push="pushCard"
-            />
-          </div>
-        </div>
+        <player
+          class="player-3"
+          :display-order="displayOrder"
+          :player-index="3"
+          :allowed-cards="allowedCards"
+          @push="pushCard"
+        />
       </div>
     </div>
     <div class="hero-foot">
@@ -92,17 +51,19 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import Card from '@/components/Card'
 import PileScore from '@/components/PileScore'
 import FinalScore from '@/components/FinalScore'
+import Player from '@/components/Player'
+import Board from '@/components/Board'
 
 import screen from '@/mixins/screen'
 export default {
   name: 'App',
   components: {
-    Card,
     PileScore,
     FinalScore,
+    Player,
+    Board,
   },
   mixins: [screen],
   data: () => ({
@@ -131,11 +92,6 @@ export default {
     },
     isYourTurn() {
       return this.ctx.currentPlayer == this.displayOrder[3]
-    },
-    itsTurnOf() {
-      return this.displayOrder.map(
-        item => item === (this.ctx.currentPlayer | 0)
-      )
     },
     teamIndex() {
       return this.teams[this.playerID]

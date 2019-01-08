@@ -41,7 +41,7 @@ export default {
       return this.score && this.score.songs
     },
     songCards() {
-      return getSongCards(this.teamSongs)
+      return this.teamSongs && getSongCards(this.teamSongs)
     },
   },
 }
